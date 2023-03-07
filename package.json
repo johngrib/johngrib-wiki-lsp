@@ -1,0 +1,12 @@
+{
+  "name": "johngrib-wiki-lsp",
+  "version": "0.1.0",
+  "main": "index.js",
+  "bin": {
+    "johngrib-wiki-lsp": "./index.js"
+  },
+  "dependencies": {
+    "vscode-languageserver": "^6.0.1",
+    "vscode-languageserver-textdocument": "^1.0.0"
+  }
+}
