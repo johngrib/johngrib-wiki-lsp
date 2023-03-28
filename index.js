@@ -21,7 +21,10 @@ const getFileAddress = (linkString) => {
 }
 
 const getWikiLinks = (text) => {
-    const regex = /\[\[([^\]]+)\]\]/g;
+    // 1번 캡쳐그룹: LINK
+    // 2번 캡쳐그룹: #소제목
+    //              [[ ( LINK  )(#소제목) ]]
+    const regex = /\[\[([^\]#]+)(#[^\]]+)?\]\]/g;
     const results = []
     regex.lastIndex = 0
     while ((matches = regex.exec(text)) && results.length < 100) {
