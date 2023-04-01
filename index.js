@@ -12,7 +12,9 @@ const fs = require('fs');
 const path = require('path');
 const DOCUMENT_ROOT_DIR = '_wiki';
 
-const { readFirstFiveLines, readMarkdownMetadataSync } = require('./metadata');
+const MARKDOWN = {
+    metadata: require('./src/markdown/metadata')
+}
 
 const currentDirectory = process.cwd();
 
@@ -60,7 +62,7 @@ const getDiagnostics = (textDocument) => {
       };
     }
 
-    const meta = readMarkdownMetadataSync(fileAddress);
+    const meta = MARKDOWN.metadata.readSync(fileAddress);
 
     return {
       severity: DiagnosticSeverity.Information,
