@@ -21,6 +21,8 @@ const DIAGNOSTICS = {
 }
 
 const currentDirectory = process.cwd();
+const connection = createConnection()
+const documents = new TextDocuments(TextDocument)
 
 const getFileAddress = (linkString) => {
     const fileAddress = linkString.startsWith('/')
@@ -64,9 +66,6 @@ const getDiagnostics = (textDocument) => {
 
   return results;
 };
-
-const connection = createConnection()
-const documents = new TextDocuments(TextDocument)
 
 /**
  * 파일이 변경될 때마다 diagnostics를 판별해 그 결과를 클라이언트에 전달한다.
@@ -119,14 +118,18 @@ const getMarkdownFiles = (dir, fileList = []) => {
     return fileList;
 };
 
-connection.onInitialize(() => ({
-    capabilities: {
-        textDocumentSync: documents.syncKind,
-        completionProvider: {
-            triggerCharacters: ['/'],   // 자동완성 트리거 키는 /
+connection.onInitialize(function() {
+    connection.window.showInformationMessage('JohnGrib Wiki LSP is running...');
+    return {
+        capabilities: {
+            textDocumentSync: documents.syncKind,
+            completionProvider: {
+                triggerCharacters: ['/'],   // 자동완성 트리거 키는 /
+            },
         },
-    },
-}))
+    }
+});
 
 documents.listen(connection)
 connection.listen()
+
