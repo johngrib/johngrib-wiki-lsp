@@ -2,7 +2,6 @@
 
 // https://www.toptal.com/javascript/language-server-protocol-tutorial
 const {
-    DiagnosticSeverity,
     TextDocuments,
     createConnection,
     CompletionItemKind,
@@ -12,10 +11,6 @@ const fs = require('fs');
 const path = require('path');
 const DOCUMENT_ROOT_DIR = '_wiki';
 
-const MARKDOWN = {
-    metadata: require('./src/markdown/metadata')
-}
-
 const DIAGNOSTICS = {
     link: require('./src/diagnostics/link'),
 }
@@ -24,47 +19,15 @@ const currentDirectory = process.cwd();
 const connection = createConnection()
 const documents = new TextDocuments(TextDocument)
 
-const getFileAddress = (linkString) => {
-    const fileAddress = linkString.startsWith('/')
-        ? `${currentDirectory}/_wiki${linkString}.md`
-        : `${currentDirectory}/_wiki/${linkString}.md`;
-    return fileAddress
+const CTX = {
+    connection,
+    rootDirectory: process.cwd(),
 }
 
 const getDiagnostics = (textDocument) => {
-  const warningList = DIAGNOSTICS.link
-        .extractLinks(textDocument.getText());
+    const linkDiagnostics = DIAGNOSTICS.link.get(CTX, textDocument);
 
-  const results = warningList.map(function ({ index, value, text }) {
-    const fileAddress = getFileAddress(text);
-    const isExistFile = fs.existsSync(fileAddress);
-
-    if (!isExistFile) {
-      return {
-        severity: DiagnosticSeverity.Warning,
-        range: {
-          start: textDocument.positionAt(index),
-          end: textDocument.positionAt(index + value.length),
-        },
-        message: `${value} is invalid link.`,
-        source: "JohnGrib Wiki LSP",
-      };
-    }
-
-    const meta = MARKDOWN.metadata.readSync(fileAddress);
-
-    return {
-      severity: DiagnosticSeverity.Information,
-      range: {
-        start: textDocument.positionAt(index),
-        end: textDocument.positionAt(index + value.length),
-      },
-      message: meta.title,
-      source: "JohnGrib Wiki LSP",
-    };
-  });
-
-  return results;
+    return linkDiagnostics;
 };
 
 /**
