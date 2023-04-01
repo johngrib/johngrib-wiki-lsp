@@ -2,9 +2,6 @@ const fs = require('fs');
 
 const {
     DiagnosticSeverity,
-    TextDocuments,
-    createConnection,
-    CompletionItemKind,
 } = require('vscode-languageserver')
 
 const MARKDOWN = {
