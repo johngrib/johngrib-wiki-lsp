@@ -1,9 +1,7 @@
 #!/usr/bin/env node
 
 const fs = require('fs');
-const path = require('path');
 const logFilePath = '/tmp/johngrib-lsp.log';
-const { execFile } = require('child_process');
 
 const DEBUG_MODE = false;
 
@@ -39,14 +37,19 @@ const COMPLETION = {
 const DEFINITION = {
     address: require('./src/definition/address'),
 }
+const REFACTOR = {
+    rename: require('./src/refactor/rename'),
+}
 
 const connection = createConnection()
 const documents = new TextDocuments(TextDocument)
 
 const CTX = {
     connection,
+    documents,
     rootDirectory: process.cwd(),
     documentRootName: '_wiki',
+    logToFile,
 }
 
 const getDiagnostics = (textDocument) => {
@@ -75,74 +78,9 @@ connection.onDefinition(({ textDocument, position }) => {
   return DEFINITION.address.get(CTX, document, position);
 });
 
-async function extractLinkFromFileAtPosition(uri, position) {
-  const document = documents.get(uri);
-  const text = document.getText();
-  const lines = text.split(/\r?\n/);
-  const line = lines[position.line];
-
-  const linkPattern = /\[\[([^\]]+)\]\]/g;
-  let linkMatch;
-
-  while ((linkMatch = linkPattern.exec(line)) !== null) {
-    const linkStart = linkMatch.index;
-    const linkEnd = linkPattern.lastIndex;
-    const character = position.character;
-
-    if (linkStart <= character && character <= linkEnd) {
-      const linkContent = linkMatch[1];
-      return linkContent;
-    }
-  }
-
-  return null;
-}
-
 /* rename 기능. */
 connection.onRenameRequest(async (params) => {
-    const { textDocument, position, newName } = params;
-    const uri = textDocument.uri;
-
-    const link = await extractLinkFromFileAtPosition(uri, position);
-
-    connection.window.showInformationMessage(`Rename: ${link} -> ${newName}`);
-
-    const oldFilePath = `${CTX.documentRootName}/${link}.md`
-        .replace(/\/+/g, '/');
-    const newFilePath = `${CTX.documentRootName}/${newName}.md`
-        .replace(/\/+/g, '/');
-
-    logToFile(`Rename: ${oldFilePath} -> ${newFilePath}`);
-
-    const scriptPath = path.join(CTX.rootDirectory, 'tool', 'mv-document.sh');
-    logToFile(`Script path: ${scriptPath}`);
-
-    if (!fs.existsSync(scriptPath)) {
-        logToFile(`Script not found: ${scriptPath}`);
-        connection.window.showErrorMessage(`Rename script not found: ${scriptPath}`);
-        return [];
-    }
-
-    return new Promise((resolve, reject) => {
-        execFile(
-            'bash',
-            [scriptPath, oldFilePath, newFilePath],
-            { cwd: CTX.rootDirectory },
-            (error, stdout, stderr) => {
-                if (error) {
-                    logToFile(`Script error: ${error.message}`);
-                    reject(error);
-                } else {
-                    if (stdout) {
-                        logToFile(`Script output: ${stdout}`);
-                    }
-                    if (stderr) {
-                        logToFile(`Script error: ${stderr}`);
-                    }
-                    resolve([]);
-                }
-            });
-    });
+    await REFACTOR.rename.exe(CTX, params);
 });
 
 /* LSP 초기화. */
