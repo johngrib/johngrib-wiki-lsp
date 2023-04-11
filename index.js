@@ -34,13 +34,13 @@ const DIAGNOSTICS = {
 const DEFINITION = {
     address: require('./src/definition/address'),
 }
-const REFACTOR = {
-    rename: require('./src/refactor/rename'),
-}
 const LINK = {
     finder: require('./src/link/finder'),
     extractor: require('./src/link/extractor'),
     completion: require('./src/link/completion'),
+}
+const MARKDOWN = {
+    renamer: require('./src/markdown/renamer'),
 }
 
 const UTIL = {
@@ -86,7 +86,7 @@ connection.onDefinition(({ textDocument, position }) => {
 
 /* rename 기능. */
 connection.onRenameRequest(async (params) => {
-    await REFACTOR.rename.exe(CTX, params);
+    await MARKDOWN.renamer.rename(CTX, params);
 });
 
 /* LSP 초기화. */
