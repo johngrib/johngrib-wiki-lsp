@@ -31,9 +31,6 @@ const {TextDocument} = require('vscode-languageserver-textdocument')
 const DIAGNOSTICS = {
     link: require('./src/diagnostics/link'),
 }
-const COMPLETION = {
-    link: require('./src/completion/link'),
-}
 const DEFINITION = {
     address: require('./src/definition/address'),
 }
@@ -43,6 +40,7 @@ const REFACTOR = {
 const LINK = {
     finder: require('./src/link/finder'),
     extractor: require('./src/link/extractor'),
+    completion: require('./src/link/completion'),
 }
 
 const UTIL = {
@@ -77,7 +75,7 @@ documents.onDidChangeContent(change => {
 
 /* 자동완성 목록 제공. */
 connection.onCompletion((_textDocumentPosition, token) => {
-    return COMPLETION.link.getList(CTX);
+    return LINK.completion.getList(CTX);
 });
 
 /* Go to definition 기능. */
