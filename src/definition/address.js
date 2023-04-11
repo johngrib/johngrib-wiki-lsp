@@ -1,4 +1,5 @@
 const fs = require('fs');
+const linkExtractor = require('../link/extractor');
 
 function getFileAddress(rootDirectory, linkString) {
     const fileAddress = linkString.startsWith('/')
@@ -7,29 +8,13 @@ function getFileAddress(rootDirectory, linkString) {
     return fileAddress
 }
 
-function findLinkAtPosition(text, position) {
-  const regex = /\[\[([^\]]+)\]\]/g;
-  let match;
-
-  while ((match = regex.exec(text)) !== null) {
-    const linkStart = match.index;
-    const linkEnd = match.index + match[0].length;
-
-    if (position >= linkStart && position <= linkEnd) {
-      return match;
-    }
-  }
-
-  return null;
-}
-
 /**
  * 주어진 position의 위치에 있는 wiki 링크를 찾아 그 파일의 주소 정보를 리턴합니다.
  */
 function get(CTX, textDocument, position) {
   const text = textDocument.getText();
   const offset = textDocument.offsetAt(position);
-  const link = findLinkAtPosition(text, offset);
+  const link = linkExtractor.extractFromTextPosition(text, offset);
 
   if (link) {
     const linkPath = link[1];

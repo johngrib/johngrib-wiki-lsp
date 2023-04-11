@@ -26,6 +26,26 @@ async function extractFromFile(filePath, position) {
     return null;
 }
 
+/**
+ * text 의 position을 감싸는 link를 찾아 리턴합니다.
+ */
+function extractFromTextPosition(text, position) {
+  const regex = /\[\[([^\]]+)\]\]/g;
+  let match;
+
+  while ((match = regex.exec(text)) !== null) {
+    const linkStart = match.index;
+    const linkEnd = match.index + match[0].length;
+
+    if (position >= linkStart && position <= linkEnd) {
+      return match;
+    }
+  }
+
+  return null;
+}
+
 module.exports = {
     extractFromFile,
+    extractFromTextPosition,
 }
