@@ -31,9 +31,6 @@ const {TextDocument} = require('vscode-languageserver-textdocument')
 const DIAGNOSTICS = {
     link: require('./src/diagnostics/link'),
 }
-const DEFINITION = {
-    address: require('./src/definition/address'),
-}
 const LINK = {
     finder: require('./src/link/finder'),
     extractor: require('./src/link/extractor'),
@@ -81,7 +78,7 @@ connection.onCompletion((_textDocumentPosition, token) => {
 /* Go to definition 기능. */
 connection.onDefinition(({ textDocument, position }) => {
   const document = documents.get(textDocument.uri);
-  return DEFINITION.address.get(CTX, document, position);
+  return LINK.finder.getDefinePosition(CTX, document, position);
 });
 
 /* rename 기능. */
