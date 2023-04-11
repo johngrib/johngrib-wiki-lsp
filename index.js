@@ -3,7 +3,7 @@
 const fs = require('fs');
 const logFilePath = '/tmp/johngrib-lsp.log';
 
-const DEBUG_MODE = false;
+const DEBUG_MODE = true;
 
 function logToFile(message) {
     if (!DEBUG_MODE) {
@@ -39,6 +39,14 @@ const DEFINITION = {
 }
 const REFACTOR = {
     rename: require('./src/refactor/rename'),
+}
+const LINK = {
+    finder: require('./src/link/finder'),
+    extractor: require('./src/link/extractor'),
+}
+
+const UTIL = {
+    url: require('./src/util/url'),
 }
 
 const connection = createConnection()
@@ -94,8 +102,40 @@ connection.onInitialize(function() {
             },
             definitionProvider: true,
             renameProvider: true,
+            referencesProvider: true,
         },
     }
+});
+
+/*
+ * References 탐색 기능.
+ */
+connection.onReferences(async (params) => {
+    const { textDocument, position } = params;
+    const filePath = UTIL.url.toFilepath(textDocument.uri);
+
+    logToFile(`filePath: ${filePath}`);
+
+    const link = await LINK.extractor.extract(filePath, position);
+
+     if (!link) {
+         return [];
+     }
+
+    const results = await LINK.finder.getAllPositions(link, CTX.documentRootName);
+
+    logToFile(`results: ${JSON.stringify(results)}`);
+
+    return results.map(result => {
+        const resultUri = `file://${CTX.rootDirectory}/${result.filePath}`;
+        return {
+            uri: resultUri,
+            range: {
+                start: { line: result.lineNumber - 1, character: 0 },
+                end: { line: result.lineNumber - 1, character: result.line.length },
+            }
+        };
+    });
 });
 
 documents.listen(connection)
