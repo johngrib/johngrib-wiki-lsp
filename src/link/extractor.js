@@ -7,7 +7,7 @@ const readFile = util.promisify(fs.readFile);
 /**
  * file 의 position을 감싸는 link를 찾아 리턴합니다.
  */
-async function extract(filePath, position) {
+async function extractFromFile(filePath, position) {
     const content = await fs.promises.readFile(filePath, 'utf-8');
     const lines = content.split('\n');
     const line = lines[position.line];
@@ -27,5 +27,5 @@ async function extract(filePath, position) {
 }
 
 module.exports = {
-    extract,
+    extractFromFile,
 }

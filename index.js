@@ -114,7 +114,7 @@ connection.onReferences(async (params) => {
 
     logToFile(`filePath: ${filePath}`);
 
-    const link = await LINK.extractor.extract(filePath, position);
+    const link = await LINK.extractor.extractFromFile(filePath, position);
 
      if (!link) {
          return [];
