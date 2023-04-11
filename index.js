@@ -12,7 +12,13 @@ const fs = require('fs');
 const path = require('path');
 const DOCUMENT_ROOT_DIR = '_wiki';
 
-const { readFirstFiveLines, readMarkdownMetadataSync } = require('./metadata');
+const MARKDOWN = {
+    metadata: require('./src/markdown/metadata')
+}
+
+const DIAGNOSTICS = {
+    link: require('./src/diagnostics/link'),
+}
 
 const currentDirectory = process.cwd();
 
@@ -23,26 +29,9 @@ const getFileAddress = (linkString) => {
     return fileAddress
 }
 
-const getWikiLinks = (text) => {
-    // 1번 캡쳐그룹: LINK
-    // 2번 캡쳐그룹: #소제목
-    //              [[ ( LINK  )(#소제목) ]]
-    const regex = /\[\[([^\]#]+)(#[^\]]+)?\]\]/g;
-    const results = []
-    regex.lastIndex = 0
-    while ((matches = regex.exec(text)) && results.length < 100) {
-        results.push({
-            index: matches.index,
-            value: matches[0],
-            text: matches[1],
-        })
-    }
-    return results
-}
-
 const getDiagnostics = (textDocument) => {
-  const text = textDocument.getText();
-  const warningList = getWikiLinks(text);
+  const warningList = DIAGNOSTICS.link
+        .extractLinks(textDocument.getText());
 
   const results = warningList.map(function ({ index, value, text }) {
     const fileAddress = getFileAddress(text);
@@ -60,7 +49,7 @@ const getDiagnostics = (textDocument) => {
       };
     }
 
-    const meta = readMarkdownMetadataSync(fileAddress);
+    const meta = MARKDOWN.metadata.readSync(fileAddress);
 
     return {
       severity: DiagnosticSeverity.Information,
