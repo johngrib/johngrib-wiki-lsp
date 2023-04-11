@@ -32,7 +32,7 @@ async function extractLinkFromFileAtPosition(documents, uri, position) {
 /*
  * 리네임 요청 처리기.
  */
-async function exe(CTX, params) {
+async function rename(CTX, params) {
     CTX.logToFile(`Rename: ${JSON.stringify(params)}`);
 
     const { textDocument, position, newName } = params;
@@ -81,5 +81,5 @@ async function exe(CTX, params) {
 }
 
 module.exports = {
-    exe,
+    rename,
 };

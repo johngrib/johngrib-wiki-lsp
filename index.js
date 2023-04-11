@@ -31,18 +31,13 @@ const {TextDocument} = require('vscode-languageserver-textdocument')
 const DIAGNOSTICS = {
     link: require('./src/diagnostics/link'),
 }
-const COMPLETION = {
-    link: require('./src/completion/link'),
-}
-const DEFINITION = {
-    address: require('./src/definition/address'),
-}
-const REFACTOR = {
-    rename: require('./src/refactor/rename'),
-}
 const LINK = {
     finder: require('./src/link/finder'),
     extractor: require('./src/link/extractor'),
+    completion: require('./src/link/completion'),
+}
+const MARKDOWN = {
+    renamer: require('./src/markdown/renamer'),
 }
 
 const UTIL = {
@@ -77,18 +72,18 @@ documents.onDidChangeContent(change => {
 
 /* 자동완성 목록 제공. */
 connection.onCompletion((_textDocumentPosition, token) => {
-    return COMPLETION.link.getList(CTX);
+    return LINK.completion.getList(CTX);
 });
 
 /* Go to definition 기능. */
 connection.onDefinition(({ textDocument, position }) => {
   const document = documents.get(textDocument.uri);
-  return DEFINITION.address.get(CTX, document, position);
+  return LINK.finder.getDefinePosition(CTX, document, position);
 });
 
 /* rename 기능. */
 connection.onRenameRequest(async (params) => {
-    await REFACTOR.rename.exe(CTX, params);
+    await MARKDOWN.renamer.rename(CTX, params);
 });
 
 /* LSP 초기화. */
@@ -116,7 +111,7 @@ connection.onReferences(async (params) => {
 
     logToFile(`filePath: ${filePath}`);
 
-    const link = await LINK.extractor.extract(filePath, position);
+    const link = await LINK.extractor.extractFromFile(filePath, position);
 
      if (!link) {
          return [];
