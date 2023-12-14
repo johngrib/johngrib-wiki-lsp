@@ -25,6 +25,7 @@ function logToFile(message) {
 const {
     TextDocuments,
     createConnection,
+    CompletionItemKind,
 } = require('vscode-languageserver')
 const {TextDocument} = require('vscode-languageserver-textdocument')
 
@@ -70,9 +71,48 @@ documents.onDidChangeContent(change => {
     connection.sendDiagnostics(diagnosticsData);
 })
 
+function getResourcePath(texts) {
+    for (let i = 0; i < 12; i++) {
+        const line = texts[i];
+        const match = line.match(/^resource:\s*(.*)$/);
+        if (match) {
+            return match[1];
+        }
+    }
+    return null;
+}
+
+/** 리소스 파일 목록 제공. */
+function getResourceList(texts) {
+    const resourcePath = getResourcePath(texts);
+    const resourceAbsolutePath = `${CTX.rootDirectory}/resource/${resourcePath}/`;
+    const resourceFiles = fs.readdirSync(resourceAbsolutePath);
+
+    const markdownFiles = LINK.completion.getList(CTX);
+    const resources = resourceFiles.map(filename => {
+        logToFile(`filename: ${filename}`);
+        return {
+            label: `/resource/${resourcePath}/${filename}`,
+            kind: CompletionItemKind.File,
+            detail: `Resource file: ${filename}`,
+            documentation: `Resource file: ${filename}`,
+        };
+    })
+
+    return resources;
+}
+
 /* 자동완성 목록 제공. */
 connection.onCompletion((_textDocumentPosition, token) => {
-    return LINK.completion.getList(CTX);
+    const totalText = documents.get(_textDocumentPosition.textDocument.uri);
+    const text = totalText.getText();
+    const texts = text.split('\n');
+
+    const markdownFiles = LINK.completion.getList(CTX);
+    const resourceFiles = getResourceList(texts)
+
+    const result = markdownFiles.concat(resourceFiles);
+    return result;
 });
 
 /* Go to definition 기능. */

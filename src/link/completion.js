@@ -35,7 +35,7 @@ function getList(CTX) {
         const relativePath = path.relative(path.join(rootDirectory, documentRootName), file);
         const fileName = relativePath.replace(/\.md$/, '');
         return {
-            label: fileName,
+            label: '/' + fileName,
             kind: CompletionItemKind.File,
             detail: `Markdown file: ${fileName}`,
             documentation: `Link to the file: [[${fileName}]]`,
